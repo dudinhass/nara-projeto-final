@@ -1,0 +1,36 @@
+# PostgreSQL local para desenvolvimento.
+# Uso:  docker compose up -d        (lê POSTGRES_* do arquivo .env)
+#       docker compose ps           (estado e healthcheck)
+#       docker compose down         (para o serviço; os dados ficam no volume)
+# Não use "docker compose down -v": isso apaga o volume com o banco.
+#
+# Sem Docker (ex.: Windows sem WSL2), use: python -m scripts.postgres_local iniciar
+
+name: emprego-maranhao
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-emprego_maranhao}
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-emprego_maranhao_test}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - dados_postgres:/var/lib/postgresql/data
+      # Cria o banco de testes isolado na primeira inicialização do volume.
+      - ./database/docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  dados_postgres:

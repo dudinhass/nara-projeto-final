@@ -1,0 +1,2 @@
+type PanelPlaceholderProps = { title: string; description?: string; children?: React.ReactNode; className?: string };
+export function PanelPlaceholder({ title, description, children, className = "" }: PanelPlaceholderProps) { return <article className={`panel ${className}`}><h3>{title}</h3>{description && <p>{description}</p>}{children ?? <div className="empty">Sem dados para exibir</div>}</article>; }

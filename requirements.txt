@@ -1,0 +1,20 @@
+# Etapa 1 - investigação e coleta (Python 3.11+)
+requests>=2.32,<3
+pandas>=2.2,<3
+python-dotenv>=1.0,<2
+# Leitura em fluxo dos JSONs grandes (~64 MB por série) sem carregá-los inteiros na memória
+ijson>=3.3,<4
+
+# PostgreSQL (etapa 2)
+sqlalchemy>=2.0,<3
+alembic>=1.13,<2
+psycopg[binary]>=3.2,<4
+
+# API (etapa 3)
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+httpx>=0.27,<1
+
+# Testes
+pytest>=8,<9
+responses>=0.25,<1

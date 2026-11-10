@@ -1,0 +1,50 @@
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Caches de ferramentas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Variáveis de ambiente (nunca versionar credenciais)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Dados (grandes e reproduzíveis pela coleta): versiona só a estrutura.
+# Os relatórios em Markdown ficam em docs/ e são versionados.
+data/**
+!data/
+!data/*/
+!data/*/.gitkeep
+
+# Temporários e sistema
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# PostgreSQL local (dados ficam fora do repositório; isto é só uma salvaguarda)
+pgdata/
+*.dump
+
+# Frontend (etapa 4)
+node_modules/
+.next/
+*.tsbuildinfo

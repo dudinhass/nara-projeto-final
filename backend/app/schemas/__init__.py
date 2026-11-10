@@ -1,0 +1,1 @@
+"""Esquemas públicos da API."""

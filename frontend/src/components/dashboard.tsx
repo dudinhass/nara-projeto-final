@@ -1,0 +1,20 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { api, type RankingRow, type TotalsUf } from "@/lib/api";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { FilterBar } from "@/components/filter-bar";
+import { KpiCard } from "@/components/kpi-card";
+import { PanelPlaceholder } from "@/components/panel-placeholder";
+
+const formatNumber = (value: number | null | undefined) => value == null ? "—" : new Intl.NumberFormat("pt-BR").format(value);
+
+export function Dashboard() {
+  const [inicio, setInicio] = useState("2025-01"); const [fim, setFim] = useState("2025-12");
+  const [totais, setTotais] = useState<TotalsUf | null>(null); const [ranking, setRanking] = useState<RankingRow[]>([]);
+  const [error, setError] = useState<string | null>(null); const [loading, setLoading] = useState(true);
+  const load = useCallback(async () => { setLoading(true); setError(null); try { const [nextTotals, nextRanking] = await Promise.all([api.totaisUf({ inicio, fim }), api.ranking({ inicio, fim, limite: 5 })]); setTotais(nextTotals); setRanking(nextRanking); } catch { setError("Não foi possível carregar os dados da API."); } finally { setLoading(false); } }, [inicio, fim]);
+  useEffect(() => { void load(); }, [load]);
+  const monthly = useMemo(() => totais?.mensal ?? [], [totais]); const maxMonthly = Math.max(...monthly.map((row) => Math.abs(row.saldo_uf ?? 0)), 1);
+  return <DashboardShell><header className="header"><span>Atualização automática · PostgreSQL conectado</span><button className="export" type="button" disabled>⇩ Exportar</button></header><div className="content" id="visao-geral"><section className="heading"><div><div className="eyebrow">NOVO CAGED · MARANHÃO</div><h1>Visão geral do emprego formal</h1><p>Acompanhe admissões, desligamentos e saldo dos municípios.</p></div><FilterBar inicio={inicio} fim={fim} onInicioChange={setInicio} onFimChange={setFim} onRefresh={() => void load()} /></section>{error && <div className="error"><p>{error}</p><small>Verifique se a API está rodando em http://127.0.0.1:8000.</small><button type="button" onClick={() => void load()}>Tentar novamente</button></div>}<section className="cards" aria-label="Indicadores principais"><KpiCard label="Admissões" value={loading ? "..." : formatNumber(totais?.admissoes_uf)} /><KpiCard label="Desligamentos" value={loading ? "..." : formatNumber(totais?.desligamentos_uf)} /><KpiCard label="Saldo" value={loading ? "..." : formatNumber(totais?.saldo_uf)} accent={(totais?.saldo_uf ?? 0) >= 0 ? "positive" : "negative"} /><KpiCard label="Municípios" value="217" helper="Maranhão" /></section><section className="charts"><PanelPlaceholder className="chart-panel" title="Evolução mensal" description="Saldo oficial da UF por competência."><div className="bar-chart">{monthly.map((row) => <div className="bar-item" key={row.data_referencia}><div className={`bar ${(row.saldo_uf ?? 0) < 0 ? "negative-bar" : ""}`} style={{ height: `${Math.max(8, (Math.abs(row.saldo_uf ?? 0) / maxMonthly) * 180)}px` }} title={`${row.data_referencia}: ${formatNumber(row.saldo_uf)}`} /><span>{new Date(`${row.data_referencia}T12:00:00`).toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")}</span></div>)}</div></PanelPlaceholder><PanelPlaceholder title="Ranking de municípios" description="Maiores saldos no período."><div className="table-scroll"><table><thead><tr><th>Município</th><th>Saldo</th></tr></thead><tbody>{ranking.map((row) => <tr key={row.cod_ibge}><td>{row.municipio}</td><td className={row.saldo != null && row.saldo >= 0 ? "positive" : "negative"}>{formatNumber(row.saldo)}</td></tr>)}</tbody></table></div></PanelPlaceholder></section><section className="panel" id="cobertura"><h3>Cobertura dos dados</h3><p>Dados exibidos somente quando validados pelo IpeaData.</p><div className="coverage"><strong>{totais?.meses ?? "—"}</strong><span>competências no período selecionado</span></div></section><footer><span>Fonte: IpeaData · Metodologia: Novo Caged - sem ajuste</span><span>Dados com procedência validada</span></footer></div></DashboardShell>;
+}

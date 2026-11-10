@@ -1,0 +1,2 @@
+type KpiCardProps = { label: string; value: string; helper?: string; accent?: "positive" | "negative" | "default" };
+export function KpiCard({ label, value, helper = "Período selecionado", accent = "default" }: KpiCardProps) { return <article className="card"><div className="card-title"><span>{label}</span><span aria-hidden="true">●</span></div><h2 className={accent}>{value}</h2><p>{helper}</p></article>; }
